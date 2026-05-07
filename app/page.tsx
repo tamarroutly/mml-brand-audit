@@ -6,13 +6,17 @@ const STEPS = { INTRO: 0, INPUTS: 1, GAP_FILL: 2, GENERATING: 3, REPORT: 4 };
 
 const C = {
   black: "#000000",
-  card: "#0f0f0f",
-  border: "#222222",
+  card: "#0c0c0c",
+  cardHover: "#111111",
+  border: "#1e1e1e",
+  borderLight: "#2a2a2a",
   cyan: "#48c2f9",
   coral: "#e8372d",
   white: "#ffffff",
-  grey: "#888888",
-  greyDark: "#333333",
+  offWhite: "#e8e8e8",
+  grey: "#777777",
+  greyMid: "#555555",
+  greyDark: "#2a2a2a",
 };
 
 const GAP_QUESTIONS = [
@@ -88,56 +92,31 @@ const gradeColor = (g?: string) => {
   return C.coral;
 };
 
-const ss: Record<string, CSSProperties> = {
-  wrap: { fontFamily: "'Oswald','Arial Narrow',sans-serif", background: C.black, minHeight: "100vh", color: C.white },
-  hdr: { background: C.black, borderBottom: `2px solid ${C.coral}`, padding: "18px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" },
-  hdrTitle: { margin: 0, fontFamily: "Georgia,serif", fontSize: "22px", fontWeight: 400, color: C.white } as CSSProperties,
-  hdrSub: { margin: "2px 0 0", fontSize: "11px", color: C.grey, textTransform: "uppercase" as const, letterSpacing: "0.12em", fontWeight: 300 },
-  body: { maxWidth: "660px", margin: "0 auto", padding: "32px 20px" },
-  card: { background: C.card, border: `1px solid ${C.border}`, borderRadius: "4px", padding: "28px", marginBottom: "18px" },
-  lbl: { display: "block", fontSize: "11px", fontWeight: 600, color: C.grey, textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: "6px" },
-  inp: { width: "100%", background: "#0a0a0a", border: `1px solid ${C.border}`, borderRadius: "3px", padding: "11px 13px", color: C.white, fontSize: "14px", fontFamily: "'Oswald',sans-serif", fontWeight: 300, outline: "none" } as CSSProperties,
-  ta: { width: "100%", background: "#0a0a0a", border: `1px solid ${C.border}`, borderRadius: "3px", padding: "11px 13px", color: C.white, fontSize: "14px", fontFamily: "'Oswald',sans-serif", fontWeight: 300, outline: "none", resize: "vertical" as const, minHeight: "90px" },
-  fg: { marginBottom: "16px" },
-  btn: { background: C.coral, color: C.white, border: "none", borderRadius: "3px", padding: "14px 24px", fontSize: "14px", fontWeight: 700, fontFamily: "'Oswald',sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" as const, cursor: "pointer", width: "100%" },
-  btnGhost: { background: "transparent", color: C.grey, border: `1px solid ${C.border}`, borderRadius: "3px", padding: "9px 16px", fontSize: "11px", fontFamily: "'Oswald',sans-serif", fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "0.08em", cursor: "pointer" },
-  h2: { margin: "0 0 6px", fontSize: "20px", fontWeight: 700, color: C.white, textTransform: "uppercase" as const, letterSpacing: "0.05em" },
-  sub: { margin: "0 0 22px", fontSize: "13px", color: C.grey, lineHeight: 1.6, fontWeight: 300 },
-  accentBar: { width: "36px", height: "3px", background: C.coral, borderRadius: "2px", margin: "10px 0 18px" },
-};
-
-const optBtn = (sel: boolean): CSSProperties => ({
-  background: sel ? "#1a1a1a" : "#0a0a0a",
-  border: `1px solid ${sel ? C.cyan : C.border}`,
-  borderRadius: "3px",
-  padding: "11px 14px",
-  color: sel ? C.cyan : C.grey,
-  fontSize: "13px",
-  fontFamily: "'Oswald',sans-serif",
-  fontWeight: sel ? 500 : 300,
-  cursor: "pointer",
-  textAlign: "left",
-  marginBottom: "7px",
-  width: "100%",
-  display: "block",
-  letterSpacing: "0.02em",
-});
-
-const gradeCircle = (grade: string, sz = 80, fsz = 26): CSSProperties => ({
-  width: sz,
-  height: sz,
-  borderRadius: "50%",
-  background: `${gradeColor(grade)}15`,
-  border: `2.5px solid ${gradeColor(grade)}`,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: fsz,
-  fontWeight: 700,
-  color: gradeColor(grade),
-  flexShrink: 0,
-  fontFamily: "'Oswald',sans-serif",
-});
+// Step progress bar
+function StepBar({ current }: { current: number }) {
+  const steps = ["Brand Assets", "Self-Assessment", "Your Report"];
+  return (
+    <div style={{ display: "flex", gap: "4px", padding: "0 28px 0", marginTop: "0" }}>
+      {steps.map((label, i) => {
+        const active = i < current;
+        const isCurrent = i === current - 1;
+        return (
+          <div key={label} style={{ flex: 1, display: "flex", flexDirection: "column", gap: "5px" }}>
+            <div style={{
+              height: "2px",
+              background: active ? C.coral : isCurrent ? C.coral : C.border,
+              borderRadius: "2px",
+              opacity: isCurrent ? 0.5 : 1,
+            }} />
+            <span style={{ fontSize: "9px", color: active ? C.coral : C.greyMid, fontFamily: "'Oswald',sans-serif", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: active ? 600 : 400 }}>
+              {label}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function BrandAudit() {
   const [step, setStep] = useState(STEPS.INTRO);
@@ -198,9 +177,8 @@ export default function BrandAudit() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: inp.email,
-          website: inp.website, ig: inp.ig, li: inp.li, tw: inp.tw,
-          fb: inp.fb, tt: inp.tt, copy: inp.copy,
+          email: inp.email, website: inp.website, ig: inp.ig, li: inp.li,
+          tw: inp.tw, fb: inp.fb, tt: inp.tt, copy: inp.copy,
           logoB64: inp.logoB64, logoMime: inp.logoMime, gaps,
         }),
         signal: AbortSignal.timeout(65000),
@@ -239,31 +217,31 @@ export default function BrandAudit() {
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Brand Audit — ${r.client_name}</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&display=swap');
-      *{box-sizing:border-box;margin:0;padding:0}body{font-family:'Oswald',Arial,sans-serif;background:#fff;color:#111;padding:40px;max-width:760px;margin:0 auto}
-      h1{font-family:Georgia,serif;font-weight:400;font-size:32px;margin-bottom:4px}.subtitle{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:32px}
-      .score-hero{text-align:center;padding:32px;border:1px solid #eee;border-top:4px solid #e8372d;margin-bottom:24px;border-radius:4px}
-      .grade-big{width:80px;height:80px;border-radius:50%;border:3px solid ${gc};color:${gc};font-size:28px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
-      .score-num{font-size:42px;font-weight:700;color:${gc};line-height:1}.score-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
-      .summary{font-size:13px;color:#444;line-height:1.7;max-width:540px;margin:12px auto 18px;font-weight:300}
-      .biggest-win{border-left:3px solid #48c2f9;padding-left:12px;text-align:left;max-width:480px;margin:0 auto}.bw-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:4px}.bw-text{font-size:13px;color:#0284c7;line-height:1.5}
-      .section-title{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin:28px 0 10px}
-      .cat-card{border:1px solid #eee;border-radius:4px;padding:20px;margin-bottom:14px}.cat-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
-      .cat-name{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}.cat-score{font-size:12px;color:#888;font-weight:300;margin-top:3px}
-      .grade-circle{width:42px;height:42px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0}
-      .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.box{padding:10px 12px;border-radius:3px}
+      *{box-sizing:border-box;margin:0;padding:0}body{font-family:'Oswald',Arial,sans-serif;background:#fff;color:#111;padding:48px;max-width:800px;margin:0 auto}
+      h1{font-family:Georgia,serif;font-weight:400;font-size:36px;margin-bottom:4px}.subtitle{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.12em;margin-bottom:40px}
+      .score-hero{text-align:center;padding:40px 32px;border:1px solid #eee;border-top:4px solid #e8372d;margin-bottom:28px;border-radius:6px}
+      .grade-big{width:88px;height:88px;border-radius:50%;border:3px solid ${gc};color:${gc};font-size:30px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+      .score-num{font-size:48px;font-weight:700;color:${gc};line-height:1}.score-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+      .summary{font-size:14px;color:#444;line-height:1.75;max-width:560px;margin:14px auto 22px;font-weight:300}
+      .biggest-win{border-left:3px solid #48c2f9;padding-left:14px;text-align:left;max-width:500px;margin:0 auto}.bw-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:4px}.bw-text{font-size:13px;color:#0284c7;line-height:1.6}
+      .section-title{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.14em;font-weight:700;margin:32px 0 12px;border-bottom:1px solid #eee;padding-bottom:8px}
+      .cat-card{border:1px solid #eee;border-radius:6px;padding:24px;margin-bottom:16px}.cat-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+      .cat-name{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}.cat-score{font-size:12px;color:#888;font-weight:300;margin-top:4px}
+      .grade-circle{width:46px;height:46px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex-shrink:0}
+      .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.box{padding:12px 14px;border-radius:4px}
       .box.green{background:#f0fdf4;border:1px solid #bbf7d0}.box.red{background:#fff1f2;border:1px solid #fecdd3}.box.blue{background:#f0f9ff;border:1px solid #bae6fd}
-      .box-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+      .box-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
       .box.green .box-label{color:#16a34a}.box.red .box-label{color:#e8372d}.box.blue .box-label{color:#0284c7}
-      .box-text{font-size:12px;line-height:1.6;font-weight:300;color:#333}
-      .action{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}.action-num{width:22px;height:22px;border-radius:50%;background:#e8372d;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}.action-text{font-size:13px;color:#333;line-height:1.6;font-weight:300;padding-top:2px}
-      .closing{border-top:2px solid #e8372d;padding-top:20px;margin-top:28px;text-align:center}.closing-quote{font-family:Georgia,serif;font-size:20px;color:#111;margin-bottom:10px;line-height:1.4}.closing-byline{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.12em}
-      @media print{body{padding:20px}}
+      .box-text{font-size:12px;line-height:1.65;font-weight:300;color:#333}
+      .action{display:flex;gap:14px;margin-bottom:14px;align-items:flex-start}.action-num{width:24px;height:24px;border-radius:50%;background:#e8372d;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}.action-text{font-size:13px;color:#333;line-height:1.65;font-weight:300}
+      .closing{border-top:2px solid #e8372d;padding-top:24px;margin-top:32px;text-align:center}.closing-quote{font-family:Georgia,serif;font-size:22px;color:#111;margin-bottom:12px;line-height:1.45}.closing-byline{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.14em}
+      @media print{body{padding:24px}}
     </style></head><body>
-    <h1>Brand Audit Report</h1><p class="subtitle">${r.client_name} · Magnetic Media Labs</p>
+    <h1>Brand Audit Report</h1><p class="subtitle">${r.client_name} &nbsp;·&nbsp; Magnetic Media Labs</p>
     <div class="score-hero">
       <div class="grade-big">${r.overall_grade}</div>
       <p class="score-label">Overall Brand Score</p>
-      <p class="score-num">${r.overall_score}<span style="font-size:18px;color:#aaa">/100</span></p>
+      <p class="score-num">${r.overall_score}<span style="font-size:20px;color:#bbb">/100</span></p>
       <p class="summary">${r.summary}</p>
       <div class="biggest-win"><p class="bw-label">Biggest Win</p><p class="bw-text">${r.biggest_win}</p></div>
     </div>
@@ -278,69 +256,139 @@ export default function BrandAudit() {
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   };
 
-  // INTRO
-  if (step === STEPS.INTRO) return (
-    <div style={ss.wrap} className="audit-step">
-      <div style={ss.hdr}>
+  const wrap: CSSProperties = { fontFamily: "'Oswald','Arial Narrow',sans-serif", background: C.black, minHeight: "100vh", color: C.white };
+
+  const Header = ({ subtitle, onBack }: { subtitle: string; onBack?: () => void }) => (
+    <div style={{ background: C.black, borderBottom: `1px solid ${C.border}`, padding: "0 28px", display: "flex", alignItems: "stretch", justifyContent: "space-between", height: "60px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ width: "3px", height: "24px", background: C.coral, borderRadius: "2px", flexShrink: 0 }} />
         <div>
-          <p style={ss.hdrTitle}>Magnetic Media Labs</p>
-          <p style={ss.hdrSub}>Brand Audit Tool</p>
+          <p style={{ margin: 0, fontFamily: "Georgia,serif", fontSize: "17px", fontWeight: 400, color: C.white, lineHeight: 1.2 }}>Magnetic Media Labs</p>
+          <p style={{ margin: 0, fontSize: "10px", color: C.grey, textTransform: "uppercase", letterSpacing: "0.14em", fontWeight: 300 }}>{subtitle}</p>
         </div>
       </div>
-      <div style={ss.body}>
-        <div style={ss.card}>
-          <h1 style={{ fontFamily: "Georgia,serif", fontSize: "38px", fontWeight: 400, color: C.white, margin: "0 0 4px" }}>Brand Audit</h1>
-          <div style={ss.accentBar} />
-          <p style={{ ...ss.sub, marginBottom: "24px" }}>
-            Drop in your brand assets and get an honest, scored audit of your voice, visual identity, and social presence.
-            No fluff. No vanity grades. Just a clear-eyed look at what&apos;s working, what isn&apos;t, and exactly where to focus next.
+      {onBack && (
+        <button className="btn-ghost" onClick={onBack} style={{ background: "transparent", color: C.grey, border: "none", padding: "0 4px", fontSize: "12px", fontFamily: "'Oswald',sans-serif", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+          <span style={{ fontSize: "16px", lineHeight: 1 }}>←</span> Back
+        </button>
+      )}
+    </div>
+  );
+
+  const body: CSSProperties = { maxWidth: "720px", margin: "0 auto", padding: "36px 24px 60px" };
+
+  const card: CSSProperties = { background: C.card, border: `1px solid ${C.border}`, borderRadius: "6px", padding: "32px", marginBottom: "16px" };
+
+  const label: CSSProperties = { display: "block", fontSize: "10px", fontWeight: 600, color: C.grey, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "8px" };
+
+  const input: CSSProperties = { width: "100%", background: "#080808", border: `1px solid ${C.border}`, borderRadius: "4px", padding: "12px 14px", color: C.offWhite, fontSize: "14px", fontFamily: "'Oswald',sans-serif", fontWeight: 300, outline: "none", transition: "border-color 0.15s ease" };
+
+  const accentBar: CSSProperties = { width: "32px", height: "2px", background: C.coral, borderRadius: "2px", margin: "8px 0 20px" };
+
+  const sectionTitle: CSSProperties = { margin: "0 0 6px", fontSize: "18px", fontWeight: 700, color: C.white, textTransform: "uppercase", letterSpacing: "0.06em" };
+
+  const sectionSub: CSSProperties = { margin: "0 0 24px", fontSize: "13px", color: C.grey, lineHeight: 1.65, fontWeight: 300 };
+
+  const btnPrimary = (active: boolean): CSSProperties => ({
+    background: active ? C.coral : "#3a1210",
+    color: active ? C.white : "#6a3330",
+    border: "none", borderRadius: "4px", padding: "15px 24px",
+    fontSize: "13px", fontWeight: 700, fontFamily: "'Oswald',sans-serif",
+    letterSpacing: "0.1em", textTransform: "uppercase", cursor: active ? "pointer" : "not-allowed",
+    width: "100%",
+  });
+
+  const btnGhost: CSSProperties = { background: "transparent", color: C.grey, border: `1px solid ${C.border}`, borderRadius: "4px", padding: "10px 18px", fontSize: "11px", fontFamily: "'Oswald',sans-serif", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer" };
+
+  const optButton = (sel: boolean): CSSProperties => ({
+    background: sel ? "#0e1a1f" : "#080808",
+    border: `1px solid ${sel ? C.cyan : C.border}`,
+    borderRadius: "4px", padding: "12px 16px",
+    color: sel ? C.cyan : "#666666",
+    fontSize: "13px", fontFamily: "'Oswald',sans-serif",
+    fontWeight: sel ? 500 : 300, cursor: "pointer",
+    textAlign: "left", marginBottom: "8px", width: "100%",
+    display: "flex", alignItems: "center", gap: "12px",
+    letterSpacing: "0.02em",
+  });
+
+  const gradeCircleStyle = (grade: string, sz = 80, fsz = 26): CSSProperties => ({
+    width: sz, height: sz, borderRadius: "50%",
+    background: `${gradeColor(grade)}12`,
+    border: `2px solid ${gradeColor(grade)}`,
+    display: "flex", alignItems: "center", justifyContent: "center",
+    fontSize: fsz, fontWeight: 700, color: gradeColor(grade),
+    flexShrink: 0, fontFamily: "'Oswald',sans-serif",
+  });
+
+  // ── INTRO ──
+  if (step === STEPS.INTRO) return (
+    <div style={wrap} className="audit-step">
+      <div style={{ background: C.black, borderBottom: `1px solid ${C.border}`, padding: "0 28px", display: "flex", alignItems: "center", height: "60px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ width: "3px", height: "24px", background: C.coral, borderRadius: "2px" }} />
+          <p style={{ margin: 0, fontFamily: "Georgia,serif", fontSize: "17px", fontWeight: 400, color: C.white }}>Magnetic Media Labs</p>
+        </div>
+      </div>
+
+      <div style={{ ...body, paddingTop: "56px" }}>
+        <div style={{ marginBottom: "40px" }}>
+          <p style={{ margin: "0 0 6px", fontSize: "11px", color: C.coral, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.16em" }}>Brand Audit Tool</p>
+          <h1 style={{ fontFamily: "Georgia,serif", fontSize: "52px", fontWeight: 400, color: C.white, margin: "0 0 16px", lineHeight: 1.1 }}>
+            Know exactly where<br />your brand stands.
+          </h1>
+          <div style={{ width: "40px", height: "2px", background: C.coral, borderRadius: "2px", margin: "0 0 20px" }} />
+          <p style={{ fontSize: "15px", color: "#999", lineHeight: 1.7, maxWidth: "540px", fontWeight: 300 }}>
+            Drop in your brand assets and get an honest, scored audit of your voice, visual identity, and social presence. No fluff — just a clear-eyed look at what&apos;s working, what isn&apos;t, and exactly where to focus next.
           </p>
-          <div style={{ borderLeft: `3px solid ${C.cyan}`, paddingLeft: "16px", marginBottom: "28px" }}>
-            <p style={{ margin: 0, fontSize: "13px", color: C.grey, lineHeight: 1.8, fontWeight: 300 }}>
-              ⏱ &nbsp;About 5–7 minutes<br />
-              📥 &nbsp;Bring: website URL, social links, brand copy, and/or logo<br />
-              📊 &nbsp;You&apos;ll get: an overall grade, category scores, and a prioritized action list
-            </p>
-          </div>
-          <div style={ss.fg}>
-            <label style={ss.lbl}>Your Email Address <span style={{ color: C.coral }}>*</span></label>
-            <input
-              style={{ ...ss.inp, borderColor: inp.email && !validEmail ? C.coral : C.border }}
-              type="email"
-              placeholder="you@yourbrand.com"
-              value={inp.email}
-              onChange={(e) => upd("email", e.target.value)}
-            />
-            {inp.email && !validEmail && (
-              <p style={{ margin: "5px 0 0", fontSize: "11px", color: C.coral }}>Please enter a valid email address.</p>
-            )}
-          </div>
-          <button
-            style={{ ...ss.btn, opacity: validEmail ? 1 : 0.35, cursor: validEmail ? "pointer" : "not-allowed" }}
-            onClick={() => validEmail && setStep(STEPS.INPUTS)}
-          >
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1px", background: C.border, borderRadius: "6px", overflow: "hidden", marginBottom: "40px" }}>
+          {[
+            { icon: "⏱", label: "Time", value: "5–7 minutes" },
+            { icon: "📥", label: "Bring", value: "URLs, copy & logo" },
+            { icon: "📊", label: "You get", value: "Grade + action plan" },
+          ].map(({ icon, label: lbl, value }) => (
+            <div key={lbl} style={{ background: C.card, padding: "20px 18px" }}>
+              <p style={{ margin: "0 0 6px", fontSize: "18px" }}>{icon}</p>
+              <p style={{ margin: "0 0 2px", fontSize: "10px", color: C.grey, textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600 }}>{lbl}</p>
+              <p style={{ margin: 0, fontSize: "13px", color: C.offWhite, fontWeight: 400 }}>{value}</p>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ ...card, padding: "32px" }}>
+          <label style={label}>Your Email Address <span style={{ color: C.coral }}>*</span></label>
+          <input
+            className="audit-input"
+            style={{ ...input, marginBottom: "20px", borderColor: inp.email && !validEmail ? C.coral : C.border }}
+            type="email"
+            placeholder="you@yourbrand.com"
+            value={inp.email}
+            onChange={(e) => upd("email", e.target.value)}
+          />
+          {inp.email && !validEmail && (
+            <p style={{ margin: "-14px 0 16px", fontSize: "11px", color: C.coral }}>Please enter a valid email address.</p>
+          )}
+          <button className="btn-primary" style={btnPrimary(validEmail)} onClick={() => validEmail && setStep(STEPS.INPUTS)}>
             Start the Audit →
           </button>
+          <p style={{ margin: "12px 0 0", fontSize: "11px", color: C.greyMid, textAlign: "center" }}>Free · No account required</p>
         </div>
       </div>
     </div>
   );
 
-  // INPUTS
+  // ── INPUTS ──
   if (step === STEPS.INPUTS) return (
-    <div style={ss.wrap} className="audit-step">
-      <div style={ss.hdr}>
-        <div>
-          <p style={ss.hdrTitle}>Magnetic Media Labs</p>
-          <p style={ss.hdrSub}>Step 1 of 3 — Brand Assets</p>
-        </div>
-        <button style={ss.btnGhost} onClick={() => setStep(STEPS.INTRO)}>← Back</button>
-      </div>
-      <div style={ss.body}>
-        <div style={ss.card}>
-          <h2 style={ss.h2}>Website & Socials</h2>
-          <div style={ss.accentBar} />
-          <p style={ss.sub}>Add whatever you have. Nothing is required, but more input = sharper analysis.</p>
+    <div style={wrap} className="audit-step">
+      <Header subtitle="Step 1 of 3 — Brand Assets" onBack={() => setStep(STEPS.INTRO)} />
+      <StepBar current={1} />
+      <div style={body}>
+        <div style={{ ...card }}>
+          <h2 style={sectionTitle}>Website & Socials</h2>
+          <div style={accentBar} />
+          <p style={sectionSub}>Add whatever you have. Nothing is required, but more input = sharper analysis.</p>
           {([
             { k: "website", lbl: "Website URL", ph: "https://yourbrand.com" },
             { k: "ig", lbl: "Instagram", ph: "https://instagram.com/yourbrand" },
@@ -349,215 +397,237 @@ export default function BrandAudit() {
             { k: "fb", lbl: "Facebook", ph: "https://facebook.com/yourbrand" },
             { k: "tt", lbl: "TikTok", ph: "https://tiktok.com/@yourbrand" },
           ] as { k: keyof typeof inp; lbl: string; ph: string }[]).map(({ k, lbl, ph }) => (
-            <div key={k} style={ss.fg}>
-              <label style={ss.lbl}>{lbl}</label>
-              <input style={ss.inp} placeholder={ph} value={inp[k] as string} onChange={(e) => upd(k, e.target.value)} />
+            <div key={k} style={{ marginBottom: "14px" }}>
+              <label style={label}>{lbl}</label>
+              <input className="audit-input" style={input} placeholder={ph} value={inp[k] as string} onChange={(e) => upd(k, e.target.value)} />
             </div>
           ))}
         </div>
-        <div style={ss.card}>
-          <h2 style={ss.h2}>Brand Copy</h2>
-          <div style={ss.accentBar} />
-          <p style={ss.sub}>Paste your tagline, about page, bio, elevator pitch — anything that represents how you talk about your brand.</p>
-          <textarea style={ss.ta} rows={5} placeholder="Paste your core brand messaging here..." value={inp.copy} onChange={(e) => upd("copy", e.target.value)} />
+
+        <div style={card}>
+          <h2 style={sectionTitle}>Brand Copy</h2>
+          <div style={accentBar} />
+          <p style={sectionSub}>Paste your tagline, about page, bio, elevator pitch — anything that represents how you talk about your brand.</p>
+          <textarea
+            className="audit-input"
+            style={{ ...input, resize: "vertical", minHeight: "110px" } as CSSProperties}
+            rows={5}
+            placeholder="Paste your core brand messaging here..."
+            value={inp.copy}
+            onChange={(e) => upd("copy", e.target.value)}
+          />
         </div>
-        <div style={ss.card}>
-          <h2 style={ss.h2}>Logo</h2>
-          <div style={ss.accentBar} />
-          <p style={ss.sub}>Upload your primary logo for visual analysis. Optional but worth it.</p>
+
+        <div style={card}>
+          <h2 style={sectionTitle}>Logo</h2>
+          <div style={accentBar} />
+          <p style={sectionSub}>Upload your primary logo for visual analysis. Optional but worth it.</p>
           <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleLogo} />
           {inp.logoB64 ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px", background: "#080808", border: `1px solid ${C.border}`, borderRadius: "4px", padding: "16px" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`data:${inp.logoMime};base64,${inp.logoB64}`} alt="Uploaded logo" style={{ height: "52px", objectFit: "contain" }} />
+              <img src={`data:${inp.logoMime};base64,${inp.logoB64}`} alt="Logo" style={{ height: "48px", objectFit: "contain" }} />
               <div style={{ flex: 1 }}>
                 <p style={{ margin: 0, color: C.cyan, fontSize: "13px", fontWeight: 600 }}>✓ Logo uploaded</p>
-                <p style={{ margin: "2px 0 0", color: C.grey, fontSize: "12px" }}>{inp.logoName}</p>
+                <p style={{ margin: "2px 0 0", color: C.grey, fontSize: "12px", fontWeight: 300 }}>{inp.logoName}</p>
               </div>
-              <button style={ss.btnGhost} onClick={() => setInp((p) => ({ ...p, logoB64: null, logoName: "" }))}>Remove</button>
+              <button className="btn-ghost" style={btnGhost} onClick={() => setInp((p) => ({ ...p, logoB64: null, logoName: "" }))}>Remove</button>
             </div>
           ) : (
-            <button
-              onClick={() => fileRef.current?.click()}
-              style={{ ...ss.btnGhost, width: "100%", padding: "18px", borderStyle: "dashed", color: C.grey, fontSize: "13px" }}
-            >
+            <button onClick={() => fileRef.current?.click()} style={{ ...btnGhost, width: "100%", padding: "24px", borderStyle: "dashed", fontSize: "13px", color: C.greyMid }}>
               + Upload Logo File
             </button>
           )}
         </div>
-        <button
-          style={{ ...ss.btn, opacity: hasInput ? 1 : 0.35, cursor: hasInput ? "pointer" : "not-allowed" }}
-          onClick={() => hasInput && setStep(STEPS.GAP_FILL)}
-          disabled={!hasInput}
-        >
+
+        <button className="btn-primary" style={btnPrimary(!!hasInput)} onClick={() => hasInput && setStep(STEPS.GAP_FILL)} disabled={!hasInput}>
           Continue to Assessment →
         </button>
-        <p style={{ textAlign: "center", fontSize: "11px", color: C.greyDark, marginTop: "10px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-          At least one input required
-        </p>
+        <p style={{ textAlign: "center", fontSize: "11px", color: C.greyDark, marginTop: "10px", textTransform: "uppercase", letterSpacing: "0.08em" }}>At least one input required</p>
       </div>
     </div>
   );
 
-  // GAP FILL
+  // ── GAP FILL ──
   if (step === STEPS.GAP_FILL) return (
-    <div style={ss.wrap} className="audit-step">
-      <div style={ss.hdr}>
-        <div>
-          <p style={ss.hdrTitle}>Magnetic Media Labs</p>
-          <p style={ss.hdrSub}>Step 2 of 3 — Self-Assessment</p>
-        </div>
-        <button style={ss.btnGhost} onClick={() => setStep(STEPS.INPUTS)}>← Back</button>
-      </div>
-      <div style={ss.body}>
+    <div style={wrap} className="audit-step">
+      <Header subtitle="Step 2 of 3 — Self-Assessment" onBack={() => setStep(STEPS.INPUTS)} />
+      <StepBar current={2} />
+      <div style={body}>
         {err && (
-          <div style={{ background: "#1a0a0a", border: `1px solid ${C.coral}`, borderRadius: "3px", padding: "14px", marginBottom: "16px", color: C.coral, fontSize: "13px" }}>
+          <div style={{ background: "#160808", border: `1px solid ${C.coral}30`, borderLeft: `3px solid ${C.coral}`, borderRadius: "4px", padding: "14px 16px", marginBottom: "20px", color: "#ff9999", fontSize: "13px", fontWeight: 300 }}>
             {err}
           </div>
         )}
-        <div style={ss.card}>
-          <h2 style={ss.h2}>A few things only you know</h2>
-          <div style={ss.accentBar} />
-          <p style={ss.sub}>These fill in the gaps that URLs and logos can&apos;t tell us. Answer honestly — there&apos;s no wrong answer, only a less accurate report.</p>
+        <div style={{ ...card, borderLeft: `3px solid ${C.coral}` }}>
+          <h2 style={sectionTitle}>A few things only you know</h2>
+          <div style={accentBar} />
+          <p style={sectionSub}>These fill in the gaps that URLs and logos can&apos;t tell us. Answer honestly — there&apos;s no wrong answer, only a less accurate report.</p>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ flex: 1, height: "3px", background: C.greyDark, borderRadius: "2px", overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${(answered / GAP_QUESTIONS.length) * 100}%`, background: C.coral, borderRadius: "2px", transition: "width 0.3s ease" }} />
+            </div>
+            <span style={{ fontSize: "11px", color: C.grey, fontWeight: 600, whiteSpace: "nowrap", minWidth: "70px", textAlign: "right" }}>{answered} of {GAP_QUESTIONS.length}</span>
+          </div>
         </div>
+
         {GAP_QUESTIONS.map((q, i) => (
-          <div key={q.id} style={ss.card}>
-            <p style={{ margin: "0 0 14px", fontWeight: 500, color: C.white, fontSize: "14px", lineHeight: 1.5 }}>
-              <span style={{ color: C.coral, marginRight: "8px", fontWeight: 700 }}>{i + 1}.</span>
-              {q.question}
+          <div key={q.id} style={{ ...card, opacity: 1 }}>
+            <p style={{ margin: "0 0 16px", color: C.offWhite, fontSize: "14px", lineHeight: 1.5, display: "flex", gap: "10px" }}>
+              <span style={{ color: C.coral, fontWeight: 700, flexShrink: 0, fontSize: "13px" }}>0{i + 1}</span>
+              <span style={{ fontWeight: 400 }}>{q.question}</span>
             </p>
-            {q.options.map((opt) => (
-              <button key={opt} style={optBtn(gaps[q.id] === opt)} onClick={() => setGaps((p) => ({ ...p, [q.id]: opt }))}>
-                <span style={{ marginRight: "10px", fontSize: "10px" }}>{gaps[q.id] === opt ? "●" : "○"}</span>
-                {opt}
-              </button>
-            ))}
+            {q.options.map((opt) => {
+              const sel = gaps[q.id] === opt;
+              return (
+                <button key={opt} className="opt-btn" style={optButton(sel)} onClick={() => setGaps((p) => ({ ...p, [q.id]: opt }))}>
+                  <span style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${sel ? C.cyan : C.border}`, background: sel ? `${C.cyan}20` : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    {sel && <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: C.cyan, display: "block" }} />}
+                  </span>
+                  {opt}
+                </button>
+              );
+            })}
           </div>
         ))}
-        <button
-          style={{ ...ss.btn, opacity: allAnswered ? 1 : 0.35, cursor: allAnswered ? "pointer" : "not-allowed" }}
-          onClick={() => allAnswered && generate()}
-          disabled={!allAnswered}
-        >
+
+        <button className="btn-primary" style={btnPrimary(allAnswered)} onClick={() => allAnswered && generate()} disabled={!allAnswered}>
           Generate Audit Report →
         </button>
-        <p style={{ textAlign: "center", fontSize: "11px", color: C.greyDark, marginTop: "10px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-          {answered} of {GAP_QUESTIONS.length} answered
-        </p>
       </div>
     </div>
   );
 
-  // GENERATING
+  // ── GENERATING ──
   if (step === STEPS.GENERATING) return (
-    <div style={ss.wrap}>
-      <div style={ss.hdr}>
-        <div>
-          <p style={ss.hdrTitle}>Magnetic Media Labs</p>
-          <p style={ss.hdrSub}>Building Your Report</p>
+    <div style={wrap}>
+      <div style={{ background: C.black, borderBottom: `1px solid ${C.border}`, padding: "0 28px", display: "flex", alignItems: "center", height: "60px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ width: "3px", height: "24px", background: C.coral, borderRadius: "2px" }} />
+          <p style={{ margin: 0, fontFamily: "Georgia,serif", fontSize: "17px", fontWeight: 400, color: C.white }}>Magnetic Media Labs</p>
         </div>
       </div>
-      <div style={{ ...ss.body, textAlign: "center", paddingTop: "72px" }}>
-        <p style={{ fontFamily: "Georgia,serif", fontSize: "42px", color: C.white, margin: "0 0 8px" }}>Analyzing</p>
-        <div style={{ ...ss.accentBar, margin: "0 auto 18px" }} />
-        <p style={{ color: C.grey, fontSize: "13px", lineHeight: 1.6, maxWidth: "360px", margin: "0 auto 40px", fontWeight: 300 }}>
-          Reviewing assets, cross-referencing your answers, and writing your audit. Give it a moment.
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 60px)", padding: "40px 24px", textAlign: "center" }}>
+        <div style={{ width: "60px", height: "60px", borderRadius: "50%", border: `2px solid ${C.border}`, borderTop: `2px solid ${C.coral}`, animation: "spin 1s linear infinite", marginBottom: "32px" }} />
+        <p style={{ fontFamily: "Georgia,serif", fontSize: "36px", color: C.white, margin: "0 0 10px", fontWeight: 400 }}>Analyzing your brand</p>
+        <div style={{ width: "32px", height: "2px", background: C.coral, borderRadius: "2px", margin: "0 auto 16px" }} />
+        <p style={{ color: C.grey, fontSize: "14px", lineHeight: 1.7, maxWidth: "380px", fontWeight: 300 }}>
+          Reviewing assets, cross-referencing your answers, and writing your audit. This takes about 20–30 seconds.
         </p>
-        <div style={{ display: "flex", justifyContent: "center", gap: "9px", marginBottom: "32px" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: "8px", margin: "40px 0" }}>
           {[0, 1, 2].map((i) => (
-            <div key={i} className={`pulse-dot pulse-dot-${i}`} style={{ width: "9px", height: "9px", borderRadius: "50%", background: C.coral }} />
+            <div key={i} className={`pulse-dot pulse-dot-${i}`} style={{ width: "8px", height: "8px", borderRadius: "50%", background: C.coral }} />
           ))}
         </div>
-        <button
-          style={{ ...ss.btnGhost, fontSize: "12px" }}
-          onClick={() => { setErr("Request cancelled. Please try again."); setStep(STEPS.GAP_FILL); }}
-        >
+        <button className="btn-ghost" style={{ ...btnGhost, fontSize: "11px" }} onClick={() => { setErr("Request cancelled."); setStep(STEPS.GAP_FILL); }}>
           Cancel
         </button>
       </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 
-  // REPORT
+  // ── REPORT ──
   if (step === STEPS.REPORT && report) {
     const gc = gradeColor(report.overall_grade);
     return (
-      <div style={ss.wrap} className="audit-step">
-        <div style={ss.hdr}>
-          <div>
-            <p style={ss.hdrTitle}>Magnetic Media Labs</p>
-            <p style={ss.hdrSub}>Brand Audit — {report.client_name}</p>
+      <div style={wrap} className="audit-step">
+        <div style={{ background: C.black, borderBottom: `1px solid ${C.border}`, padding: "0 28px", display: "flex", alignItems: "center", justifyContent: "space-between", height: "60px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ width: "3px", height: "24px", background: C.coral, borderRadius: "2px" }} />
+            <div>
+              <p style={{ margin: 0, fontFamily: "Georgia,serif", fontSize: "17px", fontWeight: 400, color: C.white, lineHeight: 1.2 }}>Magnetic Media Labs</p>
+              <p style={{ margin: 0, fontSize: "10px", color: C.grey, textTransform: "uppercase", letterSpacing: "0.14em", fontWeight: 300 }}>{report.client_name}</p>
+            </div>
           </div>
-          <button style={ss.btnGhost} onClick={reset}>New Audit</button>
+          <button className="btn-ghost" onClick={reset} style={btnGhost}>New Audit</button>
         </div>
-        <div style={ss.body}>
-          <div style={{ ...ss.card, textAlign: "center", padding: "40px 28px", borderTop: `3px solid ${C.coral}` }}>
-            <div style={{ ...gradeCircle(report.overall_grade, 90, 32), margin: "0 auto 16px" }}>{report.overall_grade}</div>
-            <p style={{ margin: "0 0 2px", fontSize: "11px", color: C.grey, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600 }}>Overall Brand Score</p>
-            <p style={{ margin: "0 0 16px", fontSize: "48px", fontWeight: 700, color: gc, letterSpacing: "-1px", lineHeight: 1 }}>
-              {report.overall_score}<span style={{ fontSize: "20px", color: C.grey }}>/100</span>
+
+        <div style={body}>
+          {/* Hero score */}
+          <div style={{ ...card, textAlign: "center", padding: "48px 32px 40px", borderTop: `3px solid ${C.coral}`, marginBottom: "24px" }}>
+            <div style={{ ...gradeCircleStyle(report.overall_grade, 100, 36), margin: "0 auto 20px" }}>{report.overall_grade}</div>
+            <p style={{ margin: "0 0 4px", fontSize: "10px", color: C.grey, textTransform: "uppercase", letterSpacing: "0.14em", fontWeight: 600 }}>Overall Brand Score</p>
+            <p style={{ margin: "0 0 20px", fontSize: "56px", fontWeight: 700, color: gc, letterSpacing: "-2px", lineHeight: 1 }}>
+              {report.overall_score}<span style={{ fontSize: "22px", color: C.greyMid, letterSpacing: 0 }}>/100</span>
             </p>
-            <p style={{ margin: "0 auto 22px", fontSize: "14px", color: "#cccccc", lineHeight: 1.65, maxWidth: "500px", fontWeight: 300 }}>
+            <p style={{ margin: "0 auto 24px", fontSize: "14px", color: "#aaa", lineHeight: 1.75, maxWidth: "520px", fontWeight: 300 }}>
               {report.summary}
             </p>
-            <div style={{ borderLeft: `3px solid ${C.cyan}`, paddingLeft: "14px", textAlign: "left", maxWidth: "440px", margin: "0 auto" }}>
-              <p style={{ margin: "0 0 4px", fontSize: "12px", color: C.grey, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>Biggest Win</p>
-              <p style={{ margin: 0, fontSize: "13px", color: C.cyan, lineHeight: 1.5 }}>{report.biggest_win}</p>
+            <div style={{ display: "inline-flex", gap: "12px", background: "#080d10", border: `1px solid ${C.cyan}22`, borderLeft: `3px solid ${C.cyan}`, borderRadius: "4px", padding: "14px 18px", textAlign: "left" }}>
+              <div>
+                <p style={{ margin: "0 0 3px", fontSize: "10px", color: C.grey, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600 }}>Biggest Win</p>
+                <p style={{ margin: 0, fontSize: "13px", color: C.cyan, lineHeight: 1.55 }}>{report.biggest_win}</p>
+              </div>
             </div>
           </div>
 
-          <p style={{ fontSize: "11px", color: C.grey, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, marginBottom: "10px" }}>Category Breakdown</p>
-          {(report.categories || []).map((cat) => (
-            <div key={cat.name} style={{ ...ss.card, borderLeft: `3px solid ${gradeColor(cat.grade)}` }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "18px" }}>
-                <div>
-                  <h3 style={{ margin: 0, color: C.white, fontSize: "16px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>{cat.name}</h3>
-                  <p style={{ margin: "3px 0 0", fontSize: "12px", color: C.grey, fontWeight: 300 }}>{cat.score}/100</p>
+          {/* Category scores strip */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1px", background: C.border, borderRadius: "6px", overflow: "hidden", marginBottom: "24px" }}>
+            {(report.categories || []).map((cat) => (
+              <div key={cat.name} style={{ background: C.card, padding: "20px 18px", borderTop: `3px solid ${gradeColor(cat.grade)}` }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
+                  <p style={{ margin: 0, fontSize: "10px", color: C.grey, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, lineHeight: 1.4 }}>{cat.name}</p>
+                  <span style={{ fontSize: "16px", fontWeight: 700, color: gradeColor(cat.grade) }}>{cat.grade}</span>
                 </div>
-                <div style={gradeCircle(cat.grade, 48, 17)}>{cat.grade}</div>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
-                <div style={{ background: "#0a1208", border: "1px solid #1a2e14", borderRadius: "3px", padding: "12px" }}>
-                  <p style={{ margin: "0 0 5px", fontSize: "10px", fontWeight: 600, color: "#4ade80", textTransform: "uppercase", letterSpacing: "0.08em" }}>What&apos;s Working</p>
-                  <p style={{ margin: 0, fontSize: "12px", color: "#bbf7d0", lineHeight: 1.6, fontWeight: 300 }}>{cat.whats_working}</p>
-                </div>
-                <div style={{ background: "#120808", border: "1px solid #2e1414", borderRadius: "3px", padding: "12px" }}>
-                  <p style={{ margin: "0 0 5px", fontSize: "10px", fontWeight: 600, color: C.coral, textTransform: "uppercase", letterSpacing: "0.08em" }}>Needs Work</p>
-                  <p style={{ margin: 0, fontSize: "12px", color: "#fecaca", lineHeight: 1.6, fontWeight: 300 }}>{cat.needs_work}</p>
-                </div>
-              </div>
-              <div style={{ background: "#080d12", border: "1px solid #142030", borderRadius: "3px", padding: "12px" }}>
-                <p style={{ margin: "0 0 4px", fontSize: "10px", fontWeight: 600, color: C.cyan, textTransform: "uppercase", letterSpacing: "0.08em" }}>Top Recommendation</p>
-                <p style={{ margin: 0, fontSize: "12px", color: "#bae6fd", lineHeight: 1.6, fontWeight: 300 }}>{cat.recommendation}</p>
-              </div>
-            </div>
-          ))}
-
-          <div style={ss.card}>
-            <h3 style={{ ...ss.h2, marginBottom: "4px" }}>Priority Actions</h3>
-            <div style={ss.accentBar} />
-            {(report.priority_actions || []).map((action, i) => (
-              <div key={i} style={{ display: "flex", gap: "14px", marginBottom: "14px", alignItems: "flex-start" }}>
-                <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: C.coral, color: C.white, fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  {i + 1}
-                </div>
-                <p style={{ margin: 0, fontSize: "13px", color: "#cccccc", lineHeight: 1.6, fontWeight: 300, paddingTop: "3px" }}>{action}</p>
+                <p style={{ margin: 0, fontSize: "24px", fontWeight: 700, color: gradeColor(cat.grade) }}>{cat.score}<span style={{ fontSize: "12px", color: C.grey, fontWeight: 300 }}>/100</span></p>
               </div>
             ))}
           </div>
 
+          {/* Full category breakdowns */}
+          <p style={{ fontSize: "10px", color: C.grey, textTransform: "uppercase", letterSpacing: "0.14em", fontWeight: 700, marginBottom: "12px" }}>Category Breakdown</p>
+          {(report.categories || []).map((cat) => (
+            <div key={cat.name} className="cat-card-hover" style={{ ...card, borderLeft: `3px solid ${gradeColor(cat.grade)}`, marginBottom: "12px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <div>
+                  <h3 style={{ margin: "0 0 3px", color: C.white, fontSize: "15px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>{cat.name}</h3>
+                  <p style={{ margin: 0, fontSize: "12px", color: C.grey, fontWeight: 300 }}>{cat.score} / 100</p>
+                </div>
+                <div style={gradeCircleStyle(cat.grade, 52, 18)}>{cat.grade}</div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
+                <div style={{ background: "#060e08", border: `1px solid #1a2e1a`, borderRadius: "4px", padding: "14px" }}>
+                  <p style={{ margin: "0 0 6px", fontSize: "10px", fontWeight: 700, color: "#4ade80", textTransform: "uppercase", letterSpacing: "0.1em" }}>What&apos;s Working</p>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#a7f3c7", lineHeight: 1.65, fontWeight: 300 }}>{cat.whats_working}</p>
+                </div>
+                <div style={{ background: "#0e0606", border: `1px solid #2e1414`, borderRadius: "4px", padding: "14px" }}>
+                  <p style={{ margin: "0 0 6px", fontSize: "10px", fontWeight: 700, color: C.coral, textTransform: "uppercase", letterSpacing: "0.1em" }}>Needs Work</p>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#fecaca", lineHeight: 1.65, fontWeight: 300 }}>{cat.needs_work}</p>
+                </div>
+              </div>
+              <div style={{ background: "#060a0e", border: `1px solid #142030`, borderRadius: "4px", padding: "14px" }}>
+                <p style={{ margin: "0 0 6px", fontSize: "10px", fontWeight: 700, color: C.cyan, textTransform: "uppercase", letterSpacing: "0.1em" }}>Top Recommendation</p>
+                <p style={{ margin: 0, fontSize: "12px", color: "#bae6fd", lineHeight: 1.65, fontWeight: 300 }}>{cat.recommendation}</p>
+              </div>
+            </div>
+          ))}
+
+          {/* Priority actions */}
+          <div style={{ ...card, marginTop: "8px" }}>
+            <h3 style={{ ...sectionTitle, marginBottom: "4px" }}>Priority Actions</h3>
+            <div style={{ ...accentBar }} />
+            {(report.priority_actions || []).map((action, i) => (
+              <div key={i} style={{ display: "flex", gap: "16px", marginBottom: "16px", alignItems: "flex-start" }}>
+                <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: C.coral, color: C.white, fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</div>
+                <p style={{ margin: 0, fontSize: "14px", color: "#bbbbbb", lineHeight: 1.65, fontWeight: 300, paddingTop: "3px" }}>{action}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Closing */}
           {report.closing_note && (
-            <div style={{ ...ss.card, background: "#0a0a0a", borderTop: `2px solid ${C.coral}`, textAlign: "center", padding: "28px" }}>
-              <p style={{ fontFamily: "Georgia,serif", fontSize: "22px", color: C.white, margin: "0 0 14px", lineHeight: 1.4 }}>
+            <div style={{ ...card, background: "#080808", borderTop: `2px solid ${C.coral}`, textAlign: "center", padding: "36px 32px", marginTop: "12px" }}>
+              <p style={{ fontFamily: "Georgia,serif", fontSize: "24px", color: C.white, margin: "0 0 16px", lineHeight: 1.45, fontStyle: "italic" }}>
                 &ldquo;{report.closing_note}&rdquo;
               </p>
-              <p style={{ margin: 0, fontSize: "11px", color: C.grey, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em" }}>Magnetic Media Labs</p>
+              <p style={{ margin: 0, fontSize: "10px", color: C.grey, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.16em" }}>Magnetic Media Labs</p>
             </div>
           )}
 
-          <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
-            <button style={{ ...ss.btnGhost, flex: 1 }} onClick={() => printReport(report)}>Print / Save PDF</button>
-            <button style={{ ...ss.btnGhost, flex: 1 }} onClick={reset}>Run Another Audit</button>
+          <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
+            <button className="btn-ghost" style={{ ...btnGhost, flex: 1, padding: "14px" }} onClick={() => printReport(report)}>Print / Save PDF</button>
+            <button className="btn-ghost" style={{ ...btnGhost, flex: 1, padding: "14px" }} onClick={reset}>Run Another Audit</button>
           </div>
         </div>
       </div>

@@ -14,14 +14,56 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .audit-step {
-  animation: fadeIn 0.3s ease forwards;
+  animation: fadeIn 0.35s ease forwards;
 }
 
 .pulse-dot-0 { animation: pulse 1.2s 0s infinite ease-in-out; }
 .pulse-dot-1 { animation: pulse 1.2s 0.22s infinite ease-in-out; }
 .pulse-dot-2 { animation: pulse 1.2s 0.44s infinite ease-in-out; }
+
+/* Input focus states */
+.audit-input:focus {
+  border-color: #e8372d !important;
+  box-shadow: 0 0 0 3px rgba(232, 55, 45, 0.12);
+  outline: none;
+}
+
+/* Option button hover */
+.opt-btn:hover {
+  border-color: #333 !important;
+  background: #111 !important;
+}
+
+/* Primary button hover */
+.btn-primary:hover:not(:disabled) {
+  background: #c42e25 !important;
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+/* Ghost button hover */
+.btn-ghost:hover {
+  border-color: #444 !important;
+  color: #bbb !important;
+}
+
+.btn-ghost {
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+/* Card hover for category cards */
+.cat-card-hover:hover {
+  border-color: #2a2a2a !important;
+}
+
+.cat-card-hover {
+  transition: border-color 0.15s ease;
+}
